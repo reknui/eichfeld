@@ -140,27 +140,24 @@ void lightTail(int i, Adafruit_NeoPixel &strip) {
     int tailPixel = pixel-j;
     
 //    strip.setPixelColor(tailPixel, strip.getPixelColor(pixel)/j);
-    strip.setPixelColor(tailPixel, strip.Color(250/j,0,0));
-    strip.show();
+    strip.setPixelColor(tailPixel, strip.Color(255/j,0,0));
   }
-  
   // set first pixel after tail to BLACK
   strip.setPixelColor(pixel-9, strip.Color(0, 0, 0));
   strip.show();
   
   // when last pixel reached, fade out tail
   if (pixel == NUMBER_OF_PIXELS) {
-    for(int j = 9; j >= 0; j--) {
-      int tailPixel = pixel-j;
-      strip.setPixelColor(tailPixel, strip.getPixelColor(tailPixel-1));
-      
-      // sorry, don't know why delay has to be set here - but without it the fadeout doesn't work.
-      delay(80);
-      strip.show();
-    }
+    fadeOut();
+//    for(int j = 9; j >= 0; j--) {
+//      int tailPixel = pixel-j;
+//      strip.setPixelColor(tailPixel, strip.getPixelColor(tailPixel-1));
+//      
+//      // sorry, don't know why delay has to be set here - but without it the fadeout doesn't work.
+//      delay(80);
+//      strip.show();
+//    }
   }
-
-  strip.show();
 }
 
 void lightTailBack(int i, Adafruit_NeoPixel &strip) {  
@@ -169,6 +166,16 @@ void lightTailBack(int i, Adafruit_NeoPixel &strip) {
   // set "main" pixel color to GREEN
   strip.setPixelColor(pixel, strip.Color(255, 0, 0));
 //  strip.setPixelColor(pixel, Wheel(i, strip));
+
+// calculate color for each tailPixel after "main" pixel
+  for(int j = 1; j<9; j++) {
+    int tailPixel = pixel+j; // 32, 31, 30, 29, 28, 27, 26, 25
+    strip.setPixelColor(tailPixel, strip.Color(250/j,0,0));
+  }
+  
+  // set first pixel after tail to BLACK
+  strip.setPixelColor(pixel+9, strip.Color(0, 0, 0));
+  strip.show();
   
   // when last pixel reached, fade out tail
   if (pixel == 0) {
@@ -177,7 +184,7 @@ void lightTailBack(int i, Adafruit_NeoPixel &strip) {
       strip.setPixelColor(tailPixel, strip.getPixelColor(tailPixel+1));
       
       // sorry, don't know why delay has to be set here - but without it the fadeout doesn't work.
-      delay(80);
+      // delay(80);
       strip.show();  
     }
     
@@ -188,16 +195,18 @@ void lightTailBack(int i, Adafruit_NeoPixel &strip) {
   
   // set "main" pixel to GREEN
   strip.setPixelColor(pixel, strip.Color(255, 0, 0));
-  
-  // calculate color for each tailPixel after "main" pixel
-  for(int j = 1; j<9; j++) {
-    int tailPixel = pixel+j; // 32, 31, 30, 29, 28, 27, 26, 25
-    strip.setPixelColor(tailPixel, strip.Color(250/j,0,0));
+}
+
+void fadeOut() {
+  for(int j = 9; j >= 0; j--) {
+    int tailPixel = NUMBER_OF_PIXELS-j;
+    for(int i = 0; i<=9; i++) {
+      leds[i].setPixelColor(tailPixel, leds[i].getPixelColor(tailPixel-1));
+      leds[i].show();
+    }
+    // sorry, don't know why delay has to be set here - but without it the fadeout doesn't work.
+    delay(80);
   }
-  
-  // set first pixel after tail to BLACK
-  strip.setPixelColor(pixel+9, strip.Color(0, 0, 0));
-  strip.show();
 }
 
 // ----
