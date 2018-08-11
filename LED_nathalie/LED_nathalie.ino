@@ -70,9 +70,10 @@ void rotateServoFromZero(int timeToWaitInMs) {
       /** write Servo-position */
       servos[j].write(i);
     }
-   
+    
     delay(timeToWaitInMs);
   }
+  fadeOut();
 }
 
 void rotateServoFromMaxDegrees(int timeToWaitInMs) {
@@ -87,6 +88,7 @@ void rotateServoFromMaxDegrees(int timeToWaitInMs) {
 
     delay(timeToWaitInMs);
   }
+  fadeOutBack();
 }
 
 // ----
@@ -95,7 +97,8 @@ void rotateServoFromMaxDegrees(int timeToWaitInMs) {
  *  finds the right LED corresponding to servo's current position
  */
 int calcPixel(int servoPos) {
-  return map(servoPos, 0, SERVO_MAX_DEGREES, 0, NUMBER_OF_PIXELS);
+  int result = map(servoPos, 0, SERVO_MAX_DEGREES, 0, NUMBER_OF_PIXELS);
+  return result;
 }
 
 // ----
@@ -130,82 +133,58 @@ void lightBackwards(int i, Adafruit_NeoPixel &strip) {
 
 void lightTail(int i, Adafruit_NeoPixel &strip) {
   int pixel = calcPixel(i); 
-
-  // set "main" pixel color to GREEN
-  strip.setPixelColor(pixel, strip.Color(255, 0, 0));
-//  strip.setPixelColor(pixel, Wheel(i, strip));
+  
+  uint32_t color = Wheel(i, strip);
+  strip.setPixelColor(pixel, color);
 
   // calculate color for each tailPixel after "main" pixel
-  for(int j = 1; j<=8; j++) {
+  for(int j = 1; j<9; j++) {
     int tailPixel = pixel-j;
-    
-//    strip.setPixelColor(tailPixel, strip.getPixelColor(pixel)/j);
-    strip.setPixelColor(tailPixel, strip.Color(255/j,0,0));
+    strip.setPixelColor(tailPixel, color);
   }
   // set first pixel after tail to BLACK
   strip.setPixelColor(pixel-9, strip.Color(0, 0, 0));
   strip.show();
-  
-  // when last pixel reached, fade out tail
-  if (pixel == NUMBER_OF_PIXELS) {
-    fadeOut();
-//    for(int j = 9; j >= 0; j--) {
-//      int tailPixel = pixel-j;
-//      strip.setPixelColor(tailPixel, strip.getPixelColor(tailPixel-1));
-//      
-//      // sorry, don't know why delay has to be set here - but without it the fadeout doesn't work.
-//      delay(80);
-//      strip.show();
-//    }
-  }
 }
 
 void lightTailBack(int i, Adafruit_NeoPixel &strip) {  
   int pixel = calcPixel(i);
-
-  // set "main" pixel color to GREEN
-  strip.setPixelColor(pixel, strip.Color(255, 0, 0));
-//  strip.setPixelColor(pixel, Wheel(i, strip));
+  
+  uint32_t color = Wheel(i, strip);
+  strip.setPixelColor(pixel, color);
 
 // calculate color for each tailPixel after "main" pixel
   for(int j = 1; j<9; j++) {
-    int tailPixel = pixel+j; // 32, 31, 30, 29, 28, 27, 26, 25
-    strip.setPixelColor(tailPixel, strip.Color(250/j,0,0));
+    int tailPixel = pixel+j;
+    strip.setPixelColor(tailPixel, color);
   }
   
   // set first pixel after tail to BLACK
   strip.setPixelColor(pixel+9, strip.Color(0, 0, 0));
   strip.show();
-  
-  // when last pixel reached, fade out tail
-  if (pixel == 0) {
-    for(int j = 9; j >= 0; j--) {
-      int tailPixel = pixel+j;
-      strip.setPixelColor(tailPixel, strip.getPixelColor(tailPixel+1));
-      
-      // sorry, don't know why delay has to be set here - but without it the fadeout doesn't work.
-      // delay(80);
-      strip.show();  
-    }
-    
-    strip.setPixelColor(pixel, strip.Color(0, 0, 0));
-    strip.show();
-    return;
-  }
-  
-  // set "main" pixel to GREEN
-  strip.setPixelColor(pixel, strip.Color(255, 0, 0));
 }
 
+// Fades out all strips simultaneously when reaching to max position
 void fadeOut() {
   for(int j = 9; j >= 0; j--) {
-    int tailPixel = NUMBER_OF_PIXELS-j;
     for(int i = 0; i<=9; i++) {
-      leds[i].setPixelColor(tailPixel, leds[i].getPixelColor(tailPixel-1));
+      leds[i].setPixelColor(NUMBER_OF_PIXELS-j, leds[i].Color(0, 0, 0));
       leds[i].show();
     }
     // sorry, don't know why delay has to be set here - but without it the fadeout doesn't work.
-    delay(80);
+    delay(50);
+  }
+}
+
+// Fades out all strips simultaneously when returning to initial position
+void fadeOutBack() {
+  for(int j = 9; j >= 0; j--) {
+    for(int i = 0; i<=9; i++) {
+      leds[i].setPixelColor(j, leds[i].Color(0, 0, 0));
+      leds[i].show();
+    }
+    // sorry, don't know why delay has to be set here - but without it the fadeout doesn't work.
+    delay(50);
   }
 }
 
